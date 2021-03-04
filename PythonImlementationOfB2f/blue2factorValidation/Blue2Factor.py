@@ -22,7 +22,7 @@ class Blue2factor():
     failureUrl = secureUrl + "/f2Failure"
     SUCCESS = 0
         
-    def isAuthorized(self, jwToken):
+    def isAuthentcated(self, jwToken):
         success = False
         try:
             if self.isTokenValid(jwToken):
@@ -32,25 +32,6 @@ class Blue2factor():
                 success = self.getNewToken(jwToken);
         except:
             logging.error(traceback.format_exc())
-        return success
-    
-    def getNewToken(self, jwToken):
-        success = False
-        try:
-            logging.error("checking: " + self.endpoint)
-            response = requests.get(url=self.endpoint, auth=BearerAuth(jwToken))
-            logging.error("response: " + str(response.status_code))
-            if response.status_code == 200:
-                jsonResponse = response.json()
-                logging.error(jsonResponse)
-                if jsonResponse is not None:
-                    logging.error("success: " + str(jsonResponse["outcome"]))
-                    if int(jsonResponse["outcome"]) == self.SUCCESS:
-                        self.currentJwt = jsonResponse["token"]
-                        success = self.tokenIsValid()
-        except Exception as e:
-            logging.error(traceback.format_exc())
-            logging.error(str(e))
         return success
     
     def isTokenValid(self, jwtoken):
@@ -78,6 +59,25 @@ class Blue2factor():
         else:
             logging.error("token was null")
         return valid
+    
+    def getNewToken(self, jwToken):
+        success = False
+        try:
+            logging.error("checking: " + self.endpoint)
+            response = requests.get(url=self.endpoint, auth=BearerAuth(jwToken))
+            logging.error("response: " + str(response.status_code))
+            if response.status_code == 200:
+                jsonResponse = response.json()
+                logging.error(jsonResponse)
+                if jsonResponse is not None:
+                    logging.error("success: " + str(jsonResponse["outcome"]))
+                    if int(jsonResponse["outcome"]) == self.SUCCESS:
+                        self.currentJwt = jsonResponse["token"]
+                        success = self.tokenIsValid()
+        except Exception as e:
+            logging.error(traceback.format_exc())
+            logging.error(str(e))
+        return success
     
     def getPublicKeyFromUrl(self, url):
         publicKey = None
