@@ -17,7 +17,7 @@ import requests
 #        #show your page
 #    else:
 #        url = urllib.parse.quote(currentUrl)
-#        # redirect to b2f.failureUrl + "?url=" + url
+#        # redirect to b2f.FAILURE_URL + "?url=" + url
 
 class Blue2factor():
     # get these values from your Blue2factor company page at https://secure.blue2factor.com
@@ -25,9 +25,9 @@ class Blue2factor():
     myCompanyID = "COMPANY_ID"  # CHANGE
     
     # do not change these values
-    secureUrl = "https://secure.blue2factor.com"
-    endpoint = secureUrl + "/SAML2/SSO/" + myCompanyID + "/Token"
-    failureUrl = secureUrl + "/f2Failure"
+    SECURE_URL = "https://secure.blue2factor.com"
+    ENDPOINT = SECURE_URL + "/SAML2/SSO/" + myCompanyID + "/Token"
+    FAILURE_URL = SECURE_URL + "/f2Failure"
     SUCCESS = 0
         
     def isAuthentcated(self, jwToken):
@@ -74,7 +74,7 @@ class Blue2factor():
         #Gets a new token if the user is authenticated and then validates it
         newToken = None
         try:
-            response = requests.get(url=self.endpoint, auth=BearerAuth(jwToken))
+            response = requests.get(url=self.ENDPOINT, auth=BearerAuth(jwToken))
             logging.error("response: " + str(response.status_code))
             if response.status_code == 200:
                 jsonResponse = response.json()
@@ -109,3 +109,11 @@ class Blue2factor():
         for i in range(0, len(keyStr), 64):
             lines.append(str(keyStr[i:i + 64]))
         return '\n'.join(lines)
+
+class BearerAuth(requests.auth.AuthBase):
+    def __init__(self, token):
+        self.token = token
+
+    def __call__(self, r):
+        r.headers["authorization"] = "Bearer " + self.token
+        return r
