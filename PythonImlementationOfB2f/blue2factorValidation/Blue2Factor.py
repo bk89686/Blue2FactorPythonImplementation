@@ -27,7 +27,7 @@ class Blue2factor():
     # do not change these values
     SECURE_URL = "https://secure.blue2factor.com"
     ENDPOINT = SECURE_URL + "/SAML2/SSO/" + myCompanyID + "/Token"
-    FAILURE_URL = SECURE_URL + "/f2Failure"
+    FAILURE_URL = SECURE_URL + "/failure/" + myCompanyID + "/recheck"
     SUCCESS = 0
         
     def isAuthentcated(self, jwToken):
