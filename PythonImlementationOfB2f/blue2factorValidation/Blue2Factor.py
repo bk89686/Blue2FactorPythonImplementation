@@ -13,14 +13,11 @@ import urllib
 #    Usage;
 #
 #    b2f = Blue2factor()
-#    if jwt:
-#        if b2f.isAuthenticated(jwt):
-#            #show your page
-#        else:
-#            url = urllib.parse.quote(currentUrl)
-#            # redirect to b2f.FAILURE_URL + "?url=" + url
+#    redirect = b2f.b2fRedirect(jwt, currentUrl)
+#    if redirect:
+#        #redirect to url: redirect
 #    else:
-#        # redirect to b2f.RESET_URL
+#        #show your page
 
 class Blue2factor():
     # get these values from your Blue2factor company page at https://secure.blue2factor.com
@@ -33,6 +30,17 @@ class Blue2factor():
     FAILURE_URL = SECURE_URL + "/failure/" + myCompanyID + "/recheck"
     RESET_URL = SECURE_URL + "/failure/" + myCompanyID + "/reset"
     SUCCESS = 0
+    
+    def b2fRedirect(self, jwt, currentUrl):
+        if jwt:
+            if self.isAuthenticated(jwt):
+                redirect =  None
+            else:
+                url = urllib.parse.quote(currentUrl)
+                redirect = self.FAILURE_URL + "?url=" + url
+        else:
+            redirect = self.RESET_URL
+        return redirect
         
     def isAuthentcated(self, jwToken):
         #Checks the token, if it's not successful then gets a new token
