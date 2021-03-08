@@ -31,7 +31,7 @@ class Blue2factor():
     FAILURE_URL = SECURE_URL + "/failure/" + myCompanyID + "/recheck"
     SUCCESS = 0
     
-    def B2fCheck(self, currentUrl):
+    def B2fCheck(self, jwt, currentUrl):
         if jwt:
             if self.isAuthenticated(jwt):
                 print("show your page")
