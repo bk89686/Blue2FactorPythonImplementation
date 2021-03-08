@@ -4,11 +4,12 @@ Created on Mar 4, 2021
 @author: cjm
 '''
 
-
+from flask import redirect
 import jwt
 import logging
 import traceback
 import requests
+import urllib
 
 #    Usage;
 #
@@ -29,6 +30,15 @@ class Blue2factor():
     ENDPOINT = SECURE_URL + "/SAML2/SSO/" + myCompanyID + "/Token"
     FAILURE_URL = SECURE_URL + "/failure/" + myCompanyID + "/recheck"
     SUCCESS = 0
+    
+    def B2fCheck(self, currentUrl):
+        if jwt:
+            if self.isAuthenticated(jwt):
+                print("show your page")
+            else:
+                return redirect(self.failureUrl + "?url=" + urllib.parse.quote(currentUrl), 302)
+        else:
+            return redirect(self.resetUrl, 302)
         
     def isAuthentcated(self, jwToken):
         #Checks the token, if it's not successful then gets a new token
