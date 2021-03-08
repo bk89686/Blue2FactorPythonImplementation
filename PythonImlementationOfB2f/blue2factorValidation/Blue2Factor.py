@@ -4,7 +4,6 @@ Created on Mar 4, 2021
 @author: cjm
 '''
 
-from flask import redirect
 import jwt
 import logging
 import traceback
@@ -14,11 +13,14 @@ import urllib
 #    Usage;
 #
 #    b2f = Blue2factor()
-#    if b2f.isAuthenticated(jwt):
-#        #show your page
+#    if jwt:
+#        if b2f.isAuthenticated(jwt):
+#            #show your page
+#        else:
+#            url = urllib.parse.quote(currentUrl)
+#            # redirect to b2f.FAILURE_URL + "?url=" + url
 #    else:
-#        url = urllib.parse.quote(currentUrl)
-#        # redirect to b2f.FAILURE_URL + "?url=" + url
+#        # redirect to b2f.RESET_URL
 
 class Blue2factor():
     # get these values from your Blue2factor company page at https://secure.blue2factor.com
@@ -29,16 +31,8 @@ class Blue2factor():
     SECURE_URL = "https://secure.blue2factor.com"
     ENDPOINT = SECURE_URL + "/SAML2/SSO/" + myCompanyID + "/Token"
     FAILURE_URL = SECURE_URL + "/failure/" + myCompanyID + "/recheck"
+    RESET_URL = SECURE_URL + "/failure/" + myCompanyID + "/reset"
     SUCCESS = 0
-    
-    def B2fCheck(self, jwt, currentUrl):
-        if jwt:
-            if self.isAuthenticated(jwt):
-                print("show your page")
-            else:
-                return redirect(self.failureUrl + "?url=" + urllib.parse.quote(currentUrl), 302)
-        else:
-            return redirect(self.resetUrl, 302)
         
     def isAuthentcated(self, jwToken):
         #Checks the token, if it's not successful then gets a new token
@@ -56,28 +50,25 @@ class Blue2factor():
     def isTokenValid(self, jwtoken):
         #Is the current token still valid?
         valid = False
-        if jwtoken is not None:
-            try:
-                headers = jwt.get_unverified_header(jwtoken)
-                url = headers.get("x5u")
-                publicKey = self.getPublicKeyFromUrl(url)
-                if publicKey is not None:
-                    decoded = jwt.decode(
-                        jwtoken,
-                        publicKey,
-                        issuer=self.secureUrl,
-                        audience=self.myLoginUrl,
-                        algorithms=["RS256"])
-                    valid = True
-            except jwt.ExpiredSignatureError:
-                logging.error("signature expired")
-            except jwt.InvalidIssuerError:
-                logging.error("invalid issuer")
-            except Exception as e:
-                logging.error("invalid jwt")
-                logging.error(str(e))
-        else:
-            logging.error("token was null")
+        try:
+            headers = jwt.get_unverified_header(jwtoken)
+            url = headers.get("x5u")
+            publicKey = self.getPublicKeyFromUrl(url)
+            if publicKey is not None:
+                decoded = jwt.decode(
+                    jwtoken,
+                    publicKey,
+                    issuer=self.secureUrl,
+                    audience=self.myLoginUrl,
+                    algorithms=["RS256"])
+                valid = True
+        except jwt.ExpiredSignatureError:
+            logging.error("signature expired")
+        except jwt.InvalidIssuerError:
+            logging.error("invalid issuer")
+        except Exception as e:
+            logging.error("invalid jwt")
+            logging.error(str(e))
         return valid
     
     def getNewToken(self, jwToken):
